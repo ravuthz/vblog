@@ -4,19 +4,13 @@ namespace App\Http\Controllers;
 
 use App;
 use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\Redirect;
-// use Illuminate\Support\Facades\Validator;
-
-// use Illuminate\Foundation\Validation\ValidatesRequests;
 
 abstract class CrudController extends Controller
 {
     protected $model;
     protected $entities = ['item', 'items'];
     protected $itemPerPage = 5;
-    
     protected $formFields = [];
-    
     protected $validateRules = [];
     protected $validateCreateRules = [];
     protected $validateUpdateRules = [];
