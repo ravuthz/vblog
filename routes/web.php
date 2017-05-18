@@ -16,3 +16,7 @@ Route::get('/', function () {
 });
 
 Route::resource('admin/post', 'Admin\PostController');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
