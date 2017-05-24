@@ -11,14 +11,19 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('http://getbootstrap.com/examples/dashboard/dashboard.css') }}" rel="stylesheet">
+    <style type="text/css">
+        body {
+            background-color: #ecf0f1;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
         <nav class="navbar navbar-default navbar-static-top">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="navbar-header">
-
                     <!-- Collapsed Hamburger -->
                     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#app-navbar-collapse">
                         <span class="sr-only">Toggle Navigation</span>
@@ -71,10 +76,18 @@
             </div>
         </nav>
 
-        @yield('content')
+            <div class="col-sm-3 col-md-2 sidebar">
+                @include('partials.sidebar')
+            </div>
+          
+            <div class="col-sm-9 col-md-10">
+                @yield('content')
+            </div>
+            
+        </div>
     </div>
 
     <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="{{ secure_asset('js/app.js') }}"></script>
 </body>
 </html>

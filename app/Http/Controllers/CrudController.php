@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
 abstract class CrudController extends Controller
 {
@@ -17,11 +18,13 @@ abstract class CrudController extends Controller
     
     public function __construct() {
         $this->model = App::make($this->modelPath);
+        View::share('routePath', $this->routePath);
     }
     
     public function getSingleRow($id) {
         return [
-            $this->entities[0] => $this->model->findOrFail($id)    
+            $this->entities[0] => $this->model->findOrFail($id),
+            $this->entities[1] => $this->model->paginate($this->itemPerPage)
         ];
     }
     
@@ -30,38 +33,51 @@ abstract class CrudController extends Controller
             $this->entities[1] => $this->model->paginate($this->itemPerPage)
         ];
     }
-   
+    
+    public function getValidView($view) {
+        if (!View::exists($this->viewPath . ".$view")) {
+            $this->viewPath = 'crud';
+        }
+        return $this->viewPath . ".$view";
+    }
+    
+    public function checkValidation(Request $request, $rules) {
+        if ($rules) {
+            $this->validateRules = $rules;
+        }
+        $this->validate($request, $this->validateRules);
+    }
+    
     public function index(Request $request)
     {
         $data = $this->getMultipleRows();
         $data['formFields'] = $this->formFields;
-        return view($this->viewPath . '.index', $data);
+        return view($this->getValidView('index'), $data);
     }
 
     public function create()
     {
         $data = $this->getMultipleRows();   
         $data['formFields'] = $this->formFields;
-        return view($this->viewPath . '.create', $data);
+        return view($this->getValidView('create'), $data);
     }
     
     public function show($id)
     {
         $data = $this->getSingleRow($id);
         $data['formFields'] = $this->formFields;
-        return view($this->viewPath . '.show', $data);
+        return view($this->getValidView('show'), $data);
     }
 
     public function edit($id)
     {
         $data = $this->getSingleRow($id);
         $data['formFields'] = $this->formFields;
-        return view($this->viewPath . '.edit', $data);
+        return view($this->getValidView('edit'), $data);
     }
     
     public function store(Request $request)
     {
-
         if ($this->validateCreateRules) {
             $this->validateRules = $this->validateCreateRules;
         }
@@ -74,7 +90,7 @@ abstract class CrudController extends Controller
     {
         if ($this->validateUpdateRules) {
             $this->validateRules = $this->validateUpdateRules;
-        } 
+        }
         $this->validate($request, $this->validateRules);
         $this->model->findOrFail($id)->update($request->all());
         return redirect('post');

@@ -8,8 +8,8 @@ class PostController extends CrudController
 {
     protected $viewPath = 'admin.posts';
     protected $modelPath = 'App\Post';
+    protected $routePath = '/admin/post';
     protected $entities = ['post', 'posts'];
-    
     protected $itemPerPage = 10;
     
     /**
