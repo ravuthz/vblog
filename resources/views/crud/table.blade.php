@@ -1,6 +1,10 @@
-<!--<div class="panel panel-default">-->
-<!--    <div class="panel-body">-->
-        <h3 class="page-header">Posts</h3>
+<div class="panel">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            Posts
+        </h3>
+    </div>
+    <div class="panel-body">
         <table class="table table-hover table-condensed table-stripped">
             <thead>
                 <tr>
@@ -47,11 +51,11 @@
             
         </table>
         
-        @if (!$posts->count())
+        @if ($posts->count())
             <div class="text-right">
                 {{ $posts->links() }}
             </div>
         @endif
         
-<!--    </div>-->
-<!--</div>-->
+    </div>
+</div>
