@@ -16,6 +16,8 @@ abstract class CrudController extends Controller
     protected $validateCreateRules = [];
     protected $validateUpdateRules = [];
     
+    protected $routePath = '';
+    
     public function __construct() {
         $this->model = App::make($this->modelPath);
         View::share('routePath', $this->routePath);
@@ -83,7 +85,7 @@ abstract class CrudController extends Controller
         }
         $this->validate($request, $this->validateRules);
         $this->model->create($request->all());
-        return redirect('post');
+        return redirect($this->routePath)->with('success', trans('crud.item.created', ['item' => $this->entities[0]]));
     }
     
     public function update(Request $request, $id)
@@ -93,12 +95,12 @@ abstract class CrudController extends Controller
         }
         $this->validate($request, $this->validateRules);
         $this->model->findOrFail($id)->update($request->all());
-        return redirect('post');
+        return redirect($this->routePath)->with('success', trans('crud.item.updated', ['item' => $this->entities[0]]));
     }
 
     public function destroy($id)
     {
         $this->model->findOrFail($id)->delete();
-        return redirect('post');
+        return redirect($this->routePath)->with('success', trans('crud.item.deleted', ['item' => $this->entities[0]]));
     }
 }

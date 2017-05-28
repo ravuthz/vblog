@@ -6,6 +6,13 @@
         <div class="col-md-12">
             
             <div class="panel panel-default">
+                
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        Create Post
+                    </h3>
+                </div>
+                
                 <div class="panel-body">
                     
                     <form class="form form-horizontal" action="{{ $routePath }}" method="POST">

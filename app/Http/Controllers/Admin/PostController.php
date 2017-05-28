@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\View;
 use App\Http\Controllers\CrudController;
 
 class PostController extends CrudController
 {
     protected $viewPath = 'admin.posts';
     protected $modelPath = 'App\Post';
-    protected $routePath = '/admin/post';
+    protected $routePath = '/admin/post/';
     protected $entities = ['post', 'posts'];
     protected $itemPerPage = 10;
     
@@ -48,6 +49,11 @@ class PostController extends CrudController
             'placeholder' => 'Enter the content here ...'
         ]
     ];
+    
+    public function __construct() {
+        parent::__construct();
+        View::share('pageTitle', 'Posts listing');
+    }
     
     /**
      * This function can override to find item 
