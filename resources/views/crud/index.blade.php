@@ -14,7 +14,6 @@
             <div class="panel-heading">
                 <h3 class="panel-title">
                     {{ $pageTitle }}
-                    
                     <a class="btn btn-sm btn-success pull-right" href="{{ $routePath . 'create' }}">+</a>
                 </h3>
             </div>
