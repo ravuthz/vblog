@@ -11,12 +11,18 @@
 |
 */
 
+Auth::routes();
+
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::resource('admin/post', 'Admin\PostController');
-
-Auth::routes();
-
 Route::get('/home', 'HomeController@index')->name('home');
+
+Route::group(['namespace' => 'Admin', 'prefix' => 'admin'], function() {
+    
+    Route::get('/', 'HomeController@index');
+    
+    Route::resource('post', 'PostController'); 
+    
+});
