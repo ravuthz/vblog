@@ -26,3 +26,9 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin'], function() {
     Route::resource('post', 'PostController'); 
     
 });
+
+Route::group(['namespace' => 'Api', 'prefix' => 'api'], function() {
+    
+    Route::resource('post', 'PostController'); 
+    
+});
