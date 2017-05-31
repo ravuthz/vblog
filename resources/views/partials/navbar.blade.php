@@ -42,7 +42,11 @@
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <img src="{{ asset('assets/img/user.png') }}" class="img-circle" alt="Avatar"> 
-                        <span>{{ Auth::user()->name }}</span> 
+                        @if (Auth::guest())
+                            <span>Account</span> 
+                        @else
+                            <span>{{ Auth::user()->name }}</span> 
+                        @endif
                         <i class="icon-submenu lnr lnr-chevron-down"></i>
                     </a>
                     <ul class="dropdown-menu">
