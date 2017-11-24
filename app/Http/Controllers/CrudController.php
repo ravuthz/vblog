@@ -3,104 +3,179 @@
 namespace App\Http\Controllers;
 
 use App;
+use Validator;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 
 abstract class CrudController extends Controller
 {
-    protected $model;
-    protected $entities = ['item', 'items'];
-    protected $itemPerPage = 5;
-    protected $formFields = [];
-    protected $validateRules = [];
-    protected $validateCreateRules = [];
-    protected $validateUpdateRules = [];
+    private $model = null;
     
-    protected $routePath = '';
+    public $data = [];
+    public $route = null;
+    public $itemPerPage = 10;
+    
+    public $validateRules = [];
+    public $validateCreateRules = [];
+    public $validateUpdateRules = [];
     
     public function __construct() {
         $this->model = App::make($this->modelPath);
-        View::share('routePath', $this->routePath);
+
+        $this->validateAllFields();
+        
+        $this->makeData();
+        $this->makeRoutes();
+        $this->makeFields();
+    }
+    
+    private function validateField($field) {
+        if (!isset($this->{$field}) || !$this->{$field}) {
+            throw new Exception("The " . $this->{$field} . " is required in child controller.");
+        }
+    }
+    
+    private function validateAllFields() {
+        $fields = ['itemName', 'listName', 'viewPath', 'modelPath', 'routePath'];
+        foreach($fields as $field) {
+            $this->validateField($field);
+        }
+    }
+    
+    private function makeView($name) {
+        if (!View::exists($this->viewPath . ".$name")) {
+            $this->viewPath = 'crud';
+        }
+        return view($this->viewPath . ".$name", $this->data);
+    }
+    
+    private function makeData() {
+        $viewPath = $this->viewPath;
+        
+        $partial_form = "crud.form";
+        if (View::exists($viewPath . '.form')) {
+            $partial_form = $viewPath . '.form';
+        }
+        
+        $partial_fields = "crud.fields";
+        if (View::exists($viewPath . '.fields')) {
+            $partial_fields = $viewPath . '.fields';
+        }
+        
+        $this->data['viewPath'] = $this->viewPath;
+        $this->data['itemName'] = $this->itemName;
+        $this->data['listName'] = $this->listName;
+        $this->data['partial'] = (object) [
+            'form' => $partial_form,
+            'fields' => $partial_fields
+        ];
+    }
+    
+    private function makeRoutes() {
+        $route = $this->routePath;
+        $this->route = (object) [
+            'index' => $route . '.index',
+            'create' => $route . '.create',
+            'store' => $route . '.store',
+            'edit' => $route . '.edit',
+            'update' => $route . '.update',
+            'show' => $route . '.show',
+            'destroy' => $route . '.destroy'
+        ];
+        $this->data['route'] = $this->route;
+    }
+    
+    private function makeFields() {
+        if ($this->fields) {
+            array_push($this->fields, ['list' => 'Actions', 'list_class' => 'text-center']);
+            $this->data['fields'] = $this->fields;
+        }
+    }
+    
+    public function makeValidate($request) {
+        if ($this->validateRules) {
+            $validator = Validator::make($request->all(), $this->validateRules);
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+        }
+    }
+    
+    public function setValidationRules() {
+        switch (func_num_args()) {
+            case 1:
+                $this->validateRules = func_get_arg(0);
+                break;
+            case 2:
+                $this->validateRules = null;
+                $this->validateCreateRules = func_get_arg(0);
+                $this->validateUpdateRules = func_get_arg(1);
+                break;
+        }
     }
     
     public function getSingleRow($id) {
-        return [
-            $this->entities[0] => $this->model->findOrFail($id),
-            $this->entities[1] => $this->model->paginate($this->itemPerPage)
-        ];
+        return $this->model->findOrFail($id);
     }
     
-    public function getMultipleRows() {
-        return [
-            $this->entities[1] => $this->model->paginate($this->itemPerPage)
-        ];
-    }
-    
-    public function getValidView($view) {
-        if (!View::exists($this->viewPath . ".$view")) {
-            $this->viewPath = 'crud';
+    public function getMultipleRows($request) {
+        if ($request->has('size')) {
+            $this->itemPerPage = $request->get('size');
         }
-        return $this->viewPath . ".$view";
-    }
-    
-    public function checkValidation(Request $request, $rules) {
-        if ($rules) {
-            $this->validateRules = $rules;
+        if ($request->has('search')) {
+            return $this->model->search($request->get('search'))->paginate($this->itemPerPage);
         }
-        $this->validate($request, $this->validateRules);
-    }
-    
-    public function index(Request $request)
-    {
-        $data = $this->getMultipleRows();
-        $data['formFields'] = $this->formFields;
-        return view($this->getValidView('index'), $data);
+        return $this->model->paginate($this->itemPerPage);
     }
 
-    public function create()
-    {
-        $data = $this->getMultipleRows();   
-        $data['formFields'] = $this->formFields;
-        return view($this->getValidView('create'), $data);
-    }
-    
-    public function show($id)
-    {
-        $data = $this->getSingleRow($id);
-        $data['formFields'] = $this->formFields;
-        return view($this->getValidView('show'), $data);
+    public function index(Request $request) {
+        $this->data[$this->listName] = $this->getMultipleRows($request);
+        return $this->makeView('index');
     }
 
-    public function edit($id)
-    {
-        $data = $this->getSingleRow($id);
-        $data['formFields'] = $this->formFields;
-        return view($this->getValidView('edit'), $data);
+    public function create() {
+        $this->data[$this->itemName] = null;
+        return $this->makeView('create');
     }
     
-    public function store(Request $request)
-    {
+    public function show($id) {
+        $this->data[$this->itemName] = $this->getSingleRow($id);
+        return $this->makeView('show');
+    }
+
+    public function edit($id) {
+        $this->data[$this->itemName] = $this->getSingleRow($id);
+        return $this->makeView('edit');
+    }
+
+    public function store(Request $request) {
         if ($this->validateCreateRules) {
             $this->validateRules = $this->validateCreateRules;
         }
-        $this->validate($request, $this->validateRules);
+        
+        $this->makeValidate($request);
+        
         $this->model->create($request->all());
-        return redirect($this->routePath)->with('success', trans('crud.item.created', ['item' => $this->entities[0]]));
+        return redirect()->route($this->route->index)
+            ->with('success', trans('crud.item.created', ['item' => $this->itemName]));
     }
     
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         if ($this->validateUpdateRules) {
             $this->validateRules = $this->validateUpdateRules;
         }
-        $this->validate($request, $this->validateRules);
+        
+        $this->makeValidate($request);
+        
         $this->model->findOrFail($id)->update($request->all());
-        return redirect($this->routePath)->with('success', trans('crud.item.updated', ['item' => $this->entities[0]]));
+        return redirect()->route($this->route->index)
+            ->with('success', trans('crud.item.updated', ['item' => $this->itemName]));
     }
 
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $this->model->findOrFail($id)->delete();
-        return redirect($this->routePath)->with('success', trans('crud.item.deleted', ['item' => $this->entities[0]]));
+        return redirect($this->routePath)
+            ->with('success', trans('crud.item.deleted', ['item' => $this->itemName]));
     }
 }

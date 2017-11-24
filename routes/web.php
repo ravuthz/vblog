@@ -28,6 +28,7 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin'], function() {
     
     Route::get('/', 'HomeController@index');
     
-    Route::resource('post', 'PostController'); 
+    Route::resource('user', 'UserController', ['as' => 'admin']); 
+    Route::resource('post', 'PostController', ['as' => 'admin']); 
     
 });

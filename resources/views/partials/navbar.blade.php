@@ -10,8 +10,8 @@
         </div>
         <form class="navbar-form navbar-left">
             <div class="input-group">
-                <input type="text" value="" class="form-control" placeholder="Search dashboard...">
-                <span class="input-group-btn"><button type="button" class="btn btn-primary">Go</button></span>
+                <input type="text" name="search"  value="{{ Request::get('search') }}" class="form-control" placeholder="Search here...">
+                <span class="input-group-btn"><button type="submit" class="btn btn-primary">Go</button></span>
             </div>
         </form>
         <div id="navbar-menu">

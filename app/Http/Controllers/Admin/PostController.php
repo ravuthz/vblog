@@ -2,72 +2,65 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Support\Facades\View;
 use App\Http\Controllers\CrudController;
 
 class PostController extends CrudController
 {
-    protected $viewPath = 'admin.posts';
-    protected $modelPath = 'App\Post';
-    protected $routePath = '/admin/post/';
-    protected $entities = ['post', 'posts'];
-    protected $itemPerPage = 10;
+    
+    public $itemName = 'post';
+    public $listName = 'posts';
+    public $itemPerPage = 1;
+    
+    public $viewPath = 'admin.post';
+    public $modelPath = 'App\Post';
+    public $routePath = 'admin.post';
     
     /**
-     * Set validation rules for both create and update actions 
-     * when them don't set any values
+     * For lazy view form and list
+     * The attribute['name'] is required, for use in action below:
+     * - when fields have attribute['list'] it will show in table of items
+     * - when fields have attribute['type'] it will show in form to submit data
      */
-    protected $validateRules = [
-        'title' => 'required|unique:posts',
-        'content' => 'required'
-    ];
-    
-    /**
-     * Set validation rule for create action only 
-     */
-    protected $validateCreateRules = [];
-    
-    /**
-     * Set validation rule for update action only
-     */
-    protected $validateUpdateRules = [];
-    
-    /**
-     * Use to generate form inputs on view
-     */
-    protected $formFields = [
+    public $fields = [
         [
-            'name' => 'title',
-            'type' => 'text',
-            'label' => 'Title: ',
-            'placeholder' => 'Enter the title ...'
+            'list' => 'Id',
+            'name' => 'id'
         ],
         [
+            'list' => 'Title',
+            'name' => 'title',
+            'type' => 'text',
+            'label' => 'Title',
+            'attributes' => [
+                'placeholder' => 'Enter the title ...'
+            ]
+        ],
+        [
+            'list' => '<b>Content</b> :D',
             'name' => 'content',
             'type' => 'textarea',
-            'label' => 'Content: ',
-            'placeholder' => 'Enter the content here ...'
+            'label' => 'Content',
+            'attributes' => [
+                'placeholder' => 'Enter the content here ...'
+            ]
         ]
+    ];
+    
+    public $validateRules = [];
+    
+    public $validateCreateRules = [
+        'title' => 'required|unique:posts',
+        'content' => 'required'        
+    ];
+    
+    public $validateUpdateRules = [
+        'title' => 'required',
+        'content' => 'required'        
     ];
     
     public function __construct() {
         parent::__construct();
-        View::share('pageTitle', 'Posts listing');
     }
     
-    /**
-     * This function can override to find item 
-     * return $result array();
-     */
-    // public function getSingleRow($id) {
-        
-    // }
-    
-    /**
-     * This function can override to list iten 
-     * return $result array();
-     */
-    // public function getMultipleRows() {
-        
-    // }
+
 }

@@ -2,74 +2,71 @@
 
 @section('content')
 
-    @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <div class="panel panel-default">
+    @php
+        $items = $__data[$listName];
+    @endphp
     
-        @if ($pageTitle)
-            <div class="panel-heading">
-                <h3 class="panel-title">
-                    {{ $pageTitle }}
-                    <a class="btn btn-sm btn-success pull-right" href="{{ $routePath . 'create' }}">+</a>
-                </h3>
-            </div>
-        @endif
+    <div class="row">
+        <div class="col-md-12">
         
-        <div class="panel-body">
-            <table class="table table-hover table-condensed table-stripped">
+            <div class="panel panel-default">
     
-                    <thead>
-                        <tr>
-                            <th width="10%">Id</th>
-                            <th width="60%">Title</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-     
-                @if (!$posts->count())
-                    <p>There are no no any posts.</p>
-                @else
-                    @foreach($posts as $post)
-                        <tr>
-                            <td>
-                                <a href="{{ $routePath . $post->id }}">
-                                    {{ $post->id }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ $routePath . $post->id }}">
-                                    {{ $post->title }}
-                                </a>
-                            </td>
-                            <td>
-                                <div class="col-md-6">
-                                    <a class="btn btn-block btn-sm btn-info" href="{{ $routePath . $post->id }}/edit">
-                                    Modify
-                                </a>
-                                </div>
-                                <div class="col-md-6">
-                                    <form action="{{ $routePath . $post->id }}" method="POST">
-                                        {{ method_field('DELETE') }}
-                                        {{ csrf_field() }}
-                                        <input type="submit" class="btn btn-block btn-sm btn-danger" value="Delete"/>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                @endif
-                
-            </table>
-            
-            @if ($posts->count())
-                <div class="text-right">
-                    {{ $posts->links() }}
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        List {{ ucfirst($listName) }}
+                        <a class="btn btn-sm btn-success pull-right" href="{{ route($route->create) }}">+</a>
+                    </h3>
                 </div>
-            @endif
+
+                <div class="panel-body">
+                    
+                    @if ($items->count())
+                    
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <tr>
+                                    @foreach($fields as $field)
+                                        @if (!empty($field['list']))
+                                            <th class="{{ isset($field['list_class']) ? $field['list_class'] : '' }}">{!! $field['list'] !!}</th>
+                                        @endif
+                                    @endforeach
+                                </tr>
+                                @foreach($items as $row)
+                                    <tr>
+                                        @foreach($fields as $field)
+                                            @if (!empty($field['list']) && !empty($field['name']))
+                                                <td>{{ $row[$field['name']] }}</td>
+                                            @endif
+                                        @endforeach
+                                        <td>
+                                            <div class="col-md-6">
+                                                <a class="btn btn-block btn-sm btn-info" href="{{ route($route->edit, $row->id) }}">
+                                                    Modify
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <form action="{{ route($route->destroy, $row->id) }}" method="POST">
+                                                    {{ method_field('DELETE') }}
+                                                    {{ csrf_field() }}
+                                                    <input type="submit" class="btn btn-block btn-sm btn-danger" value="Delete"/>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </table>
+                        </div>
+                        
+                        <div class="text-right">
+                            {{ $items->links() }}
+                        </div>
+                    @else
+                        <h3>{{ trans('crud.list-items-not-found', ['item' => $itemName]) }}</h3>
+                        <a href="{{ route($route->create) }}">{{ trans('crud.go-to-create-new-item', ['item' => $itemName]) }}</a>
+                    @endif
+                    
+                </div>
+            </div>
             
         </div>
     </div>
